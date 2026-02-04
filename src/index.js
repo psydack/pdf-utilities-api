@@ -103,8 +103,8 @@ app.post('/pdf/compress', upload.single('pdf'), requirePayment, async (req, res)
   try {
     const compressedPdf = await compressPdf(req.file.buffer);
 
-    res.setHeader('Content-Type': 'application/pdf');
-    res.setHeader('Content-Disposition': `attachment; filename="compressed-${req.file.originalname}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="compressed-${req.file.originalname}"`);
     res.send(Buffer.from(compressedPdf));
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -147,6 +147,10 @@ function parsePageRanges(rangeStr) {
   return ranges;
 }
 
-app.listen(PORT, () => {
-  console.log(`\n📄 PDF Utilities API running on port ${PORT}\n`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`PDF Utilities API running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

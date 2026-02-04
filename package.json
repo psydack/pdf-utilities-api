@@ -7,12 +7,19 @@
     "start": "node src/index.js",
     "test": "jest --coverage --passWithNoTests"
   },
-  "keywords": ["pdf", "split", "merge", "extract", "x402"],
+  "keywords": [
+    "pdf",
+    "split",
+    "merge",
+    "extract",
+    "x402"
+  ],
   "author": "psydack",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "multer": "^1.4.5-lts.1",
     "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
