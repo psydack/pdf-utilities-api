@@ -8,6 +8,12 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS;
 const PORT = process.env.PORT || 3000;
 
+if (!WALLET_ADDRESS) {
+  console.error('❌ ERROR: WALLET_ADDRESS environment variable is required');
+  console.error('Create a .env file with WALLET_ADDRESS=0xYourAddress');
+  process.exit(1);
+}
+
 // x402 middleware
 const requirePayment = (req, res, next) => {
   if (req.headers['x-payment']) return next();
