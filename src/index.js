@@ -21,9 +21,9 @@ const requirePayment = (req, res, next) => {
   res.status(402);
   res.setHeader('PAYMENT-REQUIRED', Buffer.from(JSON.stringify({
     x402Version: 2,
-    accepts: [{ scheme: 'exact', network: 'eip155:8453', amount: '500', payTo: WALLET_ADDRESS, asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' }]
+    accepts: [{ scheme: 'exact', network: 'eip155:8453', amount: '250', payTo: WALLET_ADDRESS, asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' }]
   })).toString('base64'));
-  res.json({ message: 'Payment required', price: '$0.0005 USDC' });
+  res.json({ message: 'Payment required', price: '$0.00025 USDC' });
 };
 
 /**
@@ -125,7 +125,7 @@ app.get('/', (req, res) => {
       compress: 'POST /pdf/compress'
     },
     max_file_size: '25MB',
-    payment: { price: '$0.0005 USDC', network: 'Base' }
+    payment: { price: '$0.00025 USDC', network: 'Base' }
   });
 });
 

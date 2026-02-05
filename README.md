@@ -9,7 +9,7 @@ Split, merge, compress, and extract pages from PDF documents with x402 micropaym
 - ✅ **Compress PDF** - Optimize file size
 - ✅ **Get Info** - Page count and metadata
 - ✅ **25MB Limit** - Handle large PDFs
-- ✅ **x402 Payments** - $0.0005 USDC per operation
+- ✅ **x402 Payments** - $0.00025 USDC per operation
 
 ## 📋 Endpoints
 
@@ -31,7 +31,7 @@ Compress PDF to reduce file size.
 
 ## 💰 Payments
 
-- **Price**: $0.0005 USDC per operation
+- **Price**: $0.00025 USDC per operation
 - **Network**: Base (Chain ID 8453)
 
 ## 📝 License
