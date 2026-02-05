@@ -17,6 +17,9 @@
   "author": "psydack",
   "license": "ISC",
   "dependencies": {
+    "@x402/core": "^2.2.0",
+    "@x402/evm": "^2.2.0",
+    "@x402/express": "^2.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "multer": "^1.4.5-lts.1",

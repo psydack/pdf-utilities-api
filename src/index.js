@@ -2,11 +2,17 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const { getPageCount, extractPages, mergePdfs, compressPdf, getMetadata } = require('./pdf-utils');
+const { paymentMiddleware } = require('@x402/express');
+const { x402ResourceServer, HTTPFacilitatorClient } = require('@x402/core/server');
+const { registerExactEvmScheme } = require('@x402/evm/exact/server');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS;
 const PORT = process.env.PORT || 3000;
+const FACILITATOR_URL = process.env.FACILITATOR_URL || 'https://x402.org/facilitator';
+const NETWORK = process.env.NETWORK || 'eip155:84532';
+const PRICE = '$0.00025';
 
 if (!WALLET_ADDRESS) {
   console.error('❌ ERROR: WALLET_ADDRESS environment variable is required');
@@ -14,23 +20,40 @@ if (!WALLET_ADDRESS) {
   process.exit(1);
 }
 
-// x402 middleware
-const requirePayment = (req, res, next) => {
-  if (req.headers['x-payment']) return next();
+const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+const x402Server = new x402ResourceServer(facilitatorClient);
+registerExactEvmScheme(x402Server);
 
-  res.status(402);
-  res.setHeader('PAYMENT-REQUIRED', Buffer.from(JSON.stringify({
-    x402Version: 2,
-    accepts: [{ scheme: 'exact', network: 'eip155:8453', amount: '250', payTo: WALLET_ADDRESS, asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' }]
-  })).toString('base64'));
-  res.json({ message: 'Payment required', price: '$0.00025 USDC' });
+const x402Routes = {
+  'POST /pdf/info': {
+    accepts: [{ scheme: 'exact', price: PRICE, network: NETWORK, payTo: WALLET_ADDRESS }],
+    description: 'Get PDF metadata and page count',
+    mimeType: 'multipart/form-data'
+  },
+  'POST /pdf/extract': {
+    accepts: [{ scheme: 'exact', price: PRICE, network: NETWORK, payTo: WALLET_ADDRESS }],
+    description: 'Extract pages from a PDF',
+    mimeType: 'multipart/form-data'
+  },
+  'POST /pdf/merge': {
+    accepts: [{ scheme: 'exact', price: PRICE, network: NETWORK, payTo: WALLET_ADDRESS }],
+    description: 'Merge multiple PDFs',
+    mimeType: 'multipart/form-data'
+  },
+  'POST /pdf/compress': {
+    accepts: [{ scheme: 'exact', price: PRICE, network: NETWORK, payTo: WALLET_ADDRESS }],
+    description: 'Compress a PDF',
+    mimeType: 'multipart/form-data'
+  }
 };
+
+app.use(paymentMiddleware(x402Routes, x402Server));
 
 /**
  * POST /pdf/info
  * Get PDF metadata and page count
  */
-app.post('/pdf/info', upload.single('pdf'), requirePayment, async (req, res) => {
+app.post('/pdf/info', upload.single('pdf'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No PDF file uploaded' });
   }
@@ -51,7 +74,7 @@ app.post('/pdf/info', upload.single('pdf'), requirePayment, async (req, res) => 
  * POST /pdf/extract
  * Extract pages from PDF
  */
-app.post('/pdf/extract', upload.single('pdf'), requirePayment, async (req, res) => {
+app.post('/pdf/extract', upload.single('pdf'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No PDF file uploaded' });
   }
@@ -74,7 +97,7 @@ app.post('/pdf/extract', upload.single('pdf'), requirePayment, async (req, res) 
  * POST /pdf/merge
  * Merge multiple PDFs
  */
-app.post('/pdf/merge', upload.array('pdfs', 10), requirePayment, async (req, res) => {
+app.post('/pdf/merge', upload.array('pdfs', 10), async (req, res) => {
   if (!req.files || req.files.length < 2) {
     return res.status(400).json({ error: 'At least 2 PDF files required' });
   }
@@ -95,7 +118,7 @@ app.post('/pdf/merge', upload.array('pdfs', 10), requirePayment, async (req, res
  * POST /pdf/compress
  * Compress PDF
  */
-app.post('/pdf/compress', upload.single('pdf'), requirePayment, async (req, res) => {
+app.post('/pdf/compress', upload.single('pdf'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No PDF file uploaded' });
   }
